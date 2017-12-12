@@ -22,7 +22,7 @@ function varargout = MC_proj2(varargin)
 
 % Edit the above text to modify the response to help MC_proj2
 
-% Last Modified by GUIDE v2.5 29-Nov-2017 11:58:20
+% Last Modified by GUIDE v2.5 06-Dec-2017 12:26:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,7 +54,15 @@ function MC_proj2_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for MC_proj2
 handles.output = hObject;
-
+handles.height_num = round(str2double(get(handles.gui_height, 'String')));
+handles.width_num = round(str2double(get(handles.gui_width, 'String')));
+handles.map = zeros(handles.width_num,handles.height_num);
+handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')));
+axis off;
+grid off;
+box off;
+handles.afterDP=0;
+%colormap("gray");
 % Update handles structure
 guidata(hObject, handles);
 
@@ -170,3 +178,108 @@ function gui_generate_Callback(hObject, eventdata, handles)
 % hObject    handle to gui_generate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.height_num = round(str2double(get(handles.gui_height, 'String')));
+handles.width_num = round(str2double(get(handles.gui_width, 'String')));
+handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')))-1;
+handles.MCsteps = round(str2double(get(handles.gui_mcs, 'String')));
+handles.prop = round(str2double(get(handles.gui_prop, 'String')));
+handles.nucNum = round(str2double(get(handles.gui_CAnucl, 'String')));
+handles.caProp = round(str2double(get(handles.gui_CAprop, 'String')));
+handles.emptyPixel = 0;
+axis off;
+if handles.afterDP==0
+    if get(handles.gui_mcRad, 'Value') == 1
+        handles.map = zeros(handles.width_num,handles.height_num);
+        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.prop );
+    else
+        handles.map = zeros(handles.width_num,handles.height_num)+handles.emptyPixel;
+        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1]);
+    end
+else
+    if get(handles.gui_mcRad, 'Value') == 1
+        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.prop );
+    else
+        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1]);
+    end
+end
+handles.Ready = 1;
+guidata(hObject, handles);
+
+
+function gui_prop_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_prop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of gui_prop as text
+%        str2double(get(hObject,'String')) returns contents of gui_prop as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function gui_prop_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to gui_prop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function gui_CAprop_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_CAprop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of gui_CAprop as text
+%        str2double(get(hObject,'String')) returns contents of gui_CAprop as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function gui_CAprop_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to gui_CAprop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function gui_CAnucl_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_CAnucl (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of gui_CAnucl as text
+%        str2double(get(hObject,'String')) returns contents of gui_CAnucl as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function gui_CAnucl_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to gui_CAnucl (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in gui_dualPhrase.
+function gui_dualPhrase_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_dualPhrase (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    handles.map = growSubstructure( handles.map, handles.emptyPixel, handles.width_num-2, handles.height_num-2, [4,5,6,7]);
+    imagesc(handles.map,[0,handles.stateNumber+2]);
+    handles.afterDP = 1;
+guidata(hObject, handles);
