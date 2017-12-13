@@ -22,7 +22,7 @@ function varargout = MC_proj2(varargin)
 
 % Edit the above text to modify the response to help MC_proj2
 
-% Last Modified by GUIDE v2.5 06-Dec-2017 12:26:03
+% Last Modified by GUIDE v2.5 13-Dec-2017 12:16:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -282,4 +282,21 @@ function gui_dualPhrase_Callback(hObject, eventdata, handles)
     handles.map = growSubstructure( handles.map, handles.emptyPixel, handles.width_num-2, handles.height_num-2, [4,5,6,7]);
     imagesc(handles.map,[0,handles.stateNumber+2]);
     handles.afterDP = 1;
+guidata(hObject, handles);
+
+
+% --- Executes on button press in gui_clear.
+function gui_clear_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_clear (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    handles.height_num = round(str2double(get(handles.gui_height, 'String')));
+    handles.width_num = round(str2double(get(handles.gui_width, 'String')));
+    handles.map = zeros(handles.width_num,handles.height_num);
+    handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')));
+    axis off;
+    grid off;
+    box off;
+    handles.afterDP=0;
+    imagesc(handles.map,[0,handles.stateNumber+2]);
 guidata(hObject, handles);
