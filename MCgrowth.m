@@ -1,4 +1,4 @@
-function [ map ] = MCgrowth( sizeXwork, sizeYwork, nucl, map, stepsToDo, prop )
+function [ map ] = MCgrowth( sizeXwork, sizeYwork, nucl, map, stepsToDo, prop, EDvisible )
 %GROWBACK Summary of this function goes here
 %   Detailed explanation goes here
     %borders
@@ -11,7 +11,10 @@ function [ map ] = MCgrowth( sizeXwork, sizeYwork, nucl, map, stepsToDo, prop )
             end
         end
     end
-    imagesc(map,[0,nucl+2]);
+    if~(~EDvisible)
+        imagesc(map,[0,nucl+2]);
+        axis off;
+    end
     for i=1:stepsToDo
         randVector = randperm((sizeX-2)*(sizeY-2));
         for j=1:numel(randVector)
@@ -23,6 +26,9 @@ function [ map ] = MCgrowth( sizeXwork, sizeYwork, nucl, map, stepsToDo, prop )
         end
         i
         pause(0.001);
-        imagesc(map,[0,nucl+2]);
+        if~(~EDvisible)
+            imagesc(map,[0,nucl+2]);
+            axis off;
+        end
     end
 end

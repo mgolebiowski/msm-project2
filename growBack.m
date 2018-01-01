@@ -1,4 +1,4 @@
-function [ map ] = growBack( sizeX, sizeY, nucl, map, prop, reserved )
+function [ map ] = growBack( sizeX, sizeY, nucl, map, prop, reserved, EDvisible )
 %GROWBACK Summary of this function goes here
 %   Detailed explanation goes here
     %borders
@@ -22,8 +22,10 @@ function [ map ] = growBack( sizeX, sizeY, nucl, map, prop, reserved )
             map(round(rand()*(sizeX-1))+1,round(rand()*(sizeY-1))+1) = 1;
         end
     end
-    imagesc(map,[0,nucl+2]);
-    axis off;
+    if(~EDvisible)
+        imagesc(map,[0,nucl+2]);
+        axis off;
+    end
     is_done = 0;
     % Lets start the simulation
     while is_done == 0
@@ -40,9 +42,11 @@ function [ map ] = growBack( sizeX, sizeY, nucl, map, prop, reserved )
                 end
             end
         end
-        imagesc(newmap,[0,nucl+2]);
-        axis off;
-        pause(0.08);
+        if(~EDvisible)
+            imagesc(newmap,[0,nucl+2]);
+            axis off;
+            pause(0.08);
+        end
         map = newmap;
         if numel(find(newmap==emptyPixel)) > border
           is_done = 0;

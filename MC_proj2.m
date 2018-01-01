@@ -22,7 +22,7 @@ function varargout = MC_proj2(varargin)
 
 % Edit the above text to modify the response to help MC_proj2
 
-% Last Modified by GUIDE v2.5 13-Dec-2017 12:16:54
+% Last Modified by GUIDE v2.5 27-Dec-2017 13:52:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,15 +53,17 @@ function MC_proj2_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to MC_proj2 (see VARARGIN)
 
 % Choose default command line output for MC_proj2
-handles.output = hObject;
-handles.height_num = round(str2double(get(handles.gui_height, 'String')));
-handles.width_num = round(str2double(get(handles.gui_width, 'String')));
-handles.map = zeros(handles.width_num,handles.height_num);
-handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')));
-axis off;
-grid off;
-box off;
-handles.afterDP=0;
+    handles.output = hObject;
+    handles.height_num = round(str2double(get(handles.gui_height, 'String')));
+    handles.width_num = round(str2double(get(handles.gui_width, 'String')));
+    handles.map = zeros(handles.width_num,handles.height_num);
+    handles.eMap = zeros(handles.width_num,handles.height_num);
+    handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')));
+    handles.EDvisible = 0;
+    axis off;
+    grid off;
+    box off;
+    handles.afterDP=0;
 %colormap("gray");
 % Update handles structure
 guidata(hObject, handles);
@@ -178,6 +180,7 @@ function gui_generate_Callback(hObject, eventdata, handles)
 % hObject    handle to gui_generate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+set(handles.gui_enegry_dist,'Enable','off');
 handles.height_num = round(str2double(get(handles.gui_height, 'String')));
 handles.width_num = round(str2double(get(handles.gui_width, 'String')));
 handles.stateNumber = round(str2double(get(handles.gui_stNum, 'String')))-1;
@@ -190,19 +193,20 @@ axis off;
 if handles.afterDP==0
     if get(handles.gui_mcRad, 'Value') == 1
         handles.map = zeros(handles.width_num,handles.height_num);
-        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.prop );
+        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.prop, handles.EDvisible );
     else
         handles.map = zeros(handles.width_num,handles.height_num)+handles.emptyPixel;
-        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1]);
+        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1], handles.EDvisible);
     end
 else
     if get(handles.gui_mcRad, 'Value') == 1
-        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.prop );
+        handles.map = MCgrowth( handles.width_num, handles.height_num, handles.stateNumber, handles.map, handles.MCsteps, handles.propm, handles.EDvisible );
     else
-        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1]);
+        handles.map = growBack( handles.width_num-2, handles.height_num-2, handles.nucNum, handles.map, handles.caProp, [1], handles.EDvisible);
     end
 end
 handles.Ready = 1;
+set(handles.gui_enegry_dist,'Enable','on');
 guidata(hObject, handles);
 
 
@@ -299,4 +303,75 @@ function gui_clear_Callback(hObject, eventdata, handles)
     box off;
     handles.afterDP=0;
     imagesc(handles.map,[0,handles.stateNumber+2]);
+guidata(hObject, handles);
+
+
+% --- Executes on selection change in gui_static_nucl.
+function gui_static_nucl_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_static_nucl (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns gui_static_nucl contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from gui_static_nucl
+
+
+% --- Executes during object creation, after setting all properties.
+function gui_static_nucl_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to gui_static_nucl (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in gui_SRXMC.
+function gui_SRXMC_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_SRXMC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    %1st step
+    if get(handles.gui_homo,'Value')
+        %homogeneus
+        handles.eMap(2:end-1,2:end-1) = 5;
+    else
+        %heterogeneus
+        for i=2:(handles.height_num-1)
+            for j=2:(handles.width_num-1)
+                if isOnBorder(handles.map,i,j)
+                    handles.eMap(i,j) = 5;
+                else
+                    handles.eMap(i,j) = 2;
+                end
+            end
+        end
+    end
+guidata(hObject, handles);
+
+
+% --- Executes on button press in gui_enegry_dist.
+function gui_enegry_dist_Callback(hObject, eventdata, handles)
+% hObject    handle to gui_enegry_dist (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    axis off;
+    grid off;
+    box off;
+    if ~handles.EDvisible
+        set(handles.gui_enegry_dist,'String','Show grains visualization');
+        handles.EDvisible = 1;
+        imagesc(handles.eMap);
+    else
+        set(handles.gui_enegry_dist,'String','Show energy distribution');
+        handles.EDvisible = 0;
+        if get(handles.gui_mcRad, 'Value')
+            imagesc(handles.map,[0,handles.stateNumber+2]);
+        else
+            imagesc(handles.map,[0,handles.nucNum+2]);
+        end
+    end
 guidata(hObject, handles);
